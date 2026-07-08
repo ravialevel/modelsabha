@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ModelSabha — AI models debate your question</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-mark">॥</span>
+      <span class="wordmark-text">ModelSabha</span>
+    </div>
+    <nav class="topnav">
+      <button class="navlink active" data-view="ask">New question</button>
+      <button class="navlink" data-view="history">Past verdicts</button>
+    </nav>
+  </header>
+
+  <!-- ======================= VIEW 1 · ASK ======================= -->
+  <main id="view-ask" class="view active">
+    <section class="hero">
+      <p class="eyebrow">One question · three models · one verdict</p>
+      <h1>Don't trust one AI.<br />Convene a <em>sabha</em>.</h1>
+      <p class="hero-sub">
+        Your question goes to three different AI models at once. They answer,
+        cross-examine each other, and a judge model delivers a verdict —
+        with an honest score of how much they actually agreed.
+      </p>
+    </section>
+
+    <section class="ask-card">
+      <label class="field-label" for="question">Bring your question to the council</label>
+      <textarea id="question" rows="3" maxlength="1000"
+        placeholder="e.g. Should I take a gap year to prepare for GATE, or keep my job and prepare part-time?"></textarea>
+
+      <div class="chips" id="example-chips">
+        <button class="chip">Is it smarter to buy or rent a flat in an Indian metro right now?</button>
+        <button class="chip">Should a beginner learn Python or JavaScript first in 2026?</button>
+        <button class="chip">Is an MBA still worth it for a software engineer?</button>
+      </div>
+
+      <div class="panel-row">
+        <div class="seat">
+          <span class="seat-dot seat-a"></span>
+          <select id="model-a" aria-label="Council member 1"></select>
+        </div>
+        <div class="seat">
+          <span class="seat-dot seat-b"></span>
+          <select id="model-b" aria-label="Council member 2"></select>
+        </div>
+        <div class="seat">
+          <span class="seat-dot seat-c"></span>
+          <select id="model-c" aria-label="Council member 3"></select>
+        </div>
+        <div class="seat seat-judge">
+          <span class="seat-dot seat-j"></span>
+          <select id="model-judge" aria-label="Judge model"></select>
+          <span class="seat-tag">judge</span>
+        </div>
+      </div>
+
+      <button id="convene" class="primary">Convene the Sabha</button>
+      <p id="ask-error" class="error" hidden></p>
+      <p id="key-warning" class="warn" hidden>
+        Mesh API key not detected — copy <code>.env.example</code> to <code>.env</code> and add your <code>rsk_</code> key.
+      </p>
+    </section>
+  </main>
+
+  <!-- ===================== VIEW 2 · CHAMBER ===================== -->
+  <main id="view-chamber" class="view">
+    <div class="proceedings">
+      <p class="question-line" id="chamber-question"></p>
+      <ol class="stage-track">
+        <li id="stage-1" class="stage">Opening statements</li>
+        <li id="stage-2" class="stage">Cross-examination</li>
+        <li id="stage-3" class="stage">Verdict</li>
+      </ol>
+    </div>
+    <section class="bench" id="bench"><!-- member cards injected here --></section>
+    <p id="chamber-error" class="error" hidden></p>
+  </main>
+
+  <!-- ===================== VIEW 3 · VERDICT ===================== -->
+  <main id="view-verdict" class="view">
+    <section class="verdict-head">
+      <p class="eyebrow">The council has ruled</p>
+      <div class="dial-wrap">
+        <svg id="dial" viewBox="0 0 200 120" role="img" aria-label="Consensus score">
+          <path class="dial-track" d="M 20 110 A 80 80 0 0 1 180 110" />
+          <path class="dial-fill" id="dial-fill" d="M 20 110 A 80 80 0 0 1 180 110" />
+          <text id="dial-num" x="100" y="95" text-anchor="middle">0</text>
+          <text class="dial-label" x="100" y="112" text-anchor="middle">consensus</text>
+        </svg>
+        <p id="dial-caption" class="dial-caption"></p>
+      </div>
+      <h2 id="verdict-oneliner"></h2>
+      <p id="verdict-text" class="verdict-text"></p>
+    </section>
+
+    <section class="verdict-grid">
+      <div class="vg-col">
+        <h3>Where they agreed</h3>
+        <ul id="agreements"></ul>
+      </div>
+      <div class="vg-col vg-conflict">
+        <h3>Where they clashed</h3>
+        <ul id="disagreements"></ul>
+      </div>
+    </section>
+
+    <section class="verdict-meta">
+      <p id="strongest-voice"></p>
+      <p id="caution" class="caution"></p>
+    </section>
+
+    <div class="verdict-actions">
+      <button class="ghost" id="back-to-chamber">Review the debate</button>
+      <button class="primary" id="new-question">Ask a new question</button>
+    </div>
+  </main>
+
+  <!-- ===================== VIEW 4 · HISTORY ===================== -->
+  <main id="view-history" class="view">
+    <section class="history-head">
+      <h2>Past verdicts</h2>
+      <p class="hero-sub">Saved on this device only.</p>
+    </section>
+    <ul id="history-list" class="history-list"></ul>
+    <p id="history-empty" class="empty" hidden>No verdicts yet — convene your first sabha.</p>
+  </main>
+
+  <footer class="footline">
+      <span>Every deliberation routes through the <a href="https://meshapi.ai" target="_blank" rel="noopener">Mesh API</a></span>
+      <span class="credit">Developed by Ravi Kant Verma</span>
+    </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
